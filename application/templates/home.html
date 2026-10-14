@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Reservation system</h1>
+<p class="muted">All times are stored and shown in UTC.</p>
+<div class="cards">
+  {% for title, count in counts.items() %}
+  <div class="card"><div class="num">{{ count }}</div><div>{{ title }}</div></div>
+  {% endfor %}
+</div>
+<p><a class="btn" href="{{ url_for('create', name='reservations') }}">+ New reservation</a>
+   <a class="btn secondary" href="{{ url_for('create', name='passengers') }}">+ New passenger</a></p>
+{% endblock %}

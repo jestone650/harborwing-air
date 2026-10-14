@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block title %}Reservation {{ r.reservation_id }}{% endblock %}
+{% block content %}
+<div class="row"><h1>Reservation {{ r.reservation_id }}</h1>
+  <span>
+    <a class="btn secondary" href="{{ url_for('edit', name='reservations', reservation_id=r.reservation_id) }}">Edit</a>
+    <a class="btn danger" href="{{ url_for('delete', name='reservations', reservation_id=r.reservation_id) }}">Delete</a>
+  </span></div>
+
+<div class="grid2">
+  <section class="panel"><h2>Booking</h2>
+    <dl>
+      <dt>Status</dt><dd>{{ codes[r.reservation_status_code] }}</dd>
+      <dt>Ticket type</dt><dd>{{ codes[r.ticket_type_code] }}</dd>
+      <dt>Travel class</dt><dd>{{ codes[r.travel_class_code] }}</dd>
+      <dt>Number in party</dt><dd>{{ r.number_in_party }}</dd>
+      <dt>Created (UTC)</dt><dd>{{ r.created_at_utc|show }}</dd>
+      <dt>Booking agent</dt><dd>{{ r.agent_name or 'Direct booking (no agent)' }}</dd>
+    </dl></section>
+  <section class="panel"><h2>Main passenger</h2>
+    <dl>
+      <dt>Name</dt><dd>{{ r.first_name }} {{ r.second_name or '' }} {{ r.last_name }} (ID {{ r.passenger_id }})</dd>
+      <dt>Email</dt><dd>{{ r.email_address }}</dd>
+      <dt>Phone</dt><dd>{{ r.phone_number }}</dd>
+    </dl></section>
+</div>
+
+<section class="panel"><h2>Flight legs ({{ legs|length }})</h2>
+  {% if legs %}<div class="table-wrap"><table>
+    <thead><tr><th>Leg</th><th>Flight</th><th>Route</th><th>Scheduled dep (UTC)</th><th>Actual dep</th><th>Actual arr</th><th></th></tr></thead>
+    {% for l in legs %}<tr>
+      <td>{{ l.leg_id }}</td><td>{{ l.flight_number }}</td>
+      <td>{{ l.origin_airport_code }} → {{ l.destination_airport_code }}</td>
+      <td>{{ l.scheduled_departure_utc|show }}</td><td>{{ l.actual_departure_utc|show }}</td><td>{{ l.actual_arrival_utc|show }}</td>
+      <td><form method="post" action="{{ url_for('remove_link', reservation_id=r.reservation_id, kind='legs', other_id=l.leg_id) }}">
+        <button class="link">Remove link</button></form></td></tr>{% endfor %}
+  </table></div>{% else %}<p class="muted">No legs linked.</p>{% endif %}
+  <form class="inline" method="post" action="{{ url_for('add_link', reservation_id=r.reservation_id, kind='legs') }}">
+    <select name="other_id" required><option value="">— add an existing leg —</option>
+      {% for v, l in leg_options %}<option value="{{ v }}">{{ l }}</option>{% endfor %}</select>
+    <button class="btn">Add leg</button></form>
+</section>
+
+<section class="panel"><h2>Payments ({{ payments|length }}) · total PAID {{ "%.2f"|format(total_paid) }}</h2>
+  {% if payments %}<div class="table-wrap"><table>
+    <thead><tr><th>Payment</th><th>Status</th><th>Date</th><th>Amount</th><th>Shared with</th><th></th></tr></thead>
+    {% for p in payments %}<tr>
+      <td>{{ p.payment_id }}</td><td>{{ p.payment_status_code }}</td><td>{{ p.payment_date }}</td><td>{{ p.payment_amount }}</td>
+      <td>{% if p.shared_count > 1 %}{{ p.shared_count }} reservations*{% else %}this one only{% endif %}</td>
+      <td><form method="post" action="{{ url_for('remove_link', reservation_id=r.reservation_id, kind='payments', other_id=p.payment_id) }}">
+        <button class="link">Remove link</button></form></td></tr>{% endfor %}
+  </table></div>
+  <p class="muted">* A shared payment covers several reservations. Its full amount is shown; the split per reservation is not stored.</p>
+  {% else %}<p class="muted">No payments linked.</p>{% endif %}
+
+  <form class="inline" method="post" action="{{ url_for('add_link', reservation_id=r.reservation_id, kind='payments') }}">
+    <select name="other_id" required><option value="">— link an existing payment —</option>
+      {% for v, l in payment_options %}<option value="{{ v }}">{{ l }}</option>{% endfor %}</select>
+    <button class="btn">Link payment</button></form>
+
+  <h3>Create a new payment and link it</h3>
+  <form class="inline" method="post" action="{{ url_for('create_payment_for_reservation', reservation_id=r.reservation_id) }}">
+    <select name="payment_status_code" required>{% for v, l in payment_status %}<option value="{{ v }}">{{ l }}</option>{% endfor %}</select>
+    <input type="date" name="payment_date" required>
+    <input type="number" name="payment_amount" step="0.01" min="0.01" placeholder="Amount" required>
+    <input name="also_reservations" placeholder="Also covers reservation IDs, e.g. 12,15 (optional)">
+    <button class="btn">Create &amp; link</button></form>
+</section>
+{% endblock %}

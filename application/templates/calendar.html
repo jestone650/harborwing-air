@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}Calendar{% endblock %}
+{% block content %}
+<h1>Calendar dates</h1>
+<form class="search" method="get"><input type="month" name="month" value="{{ month }}"><button>Show</button></form>
+{% if days %}<div class="table-wrap"><table>
+  <thead><tr><th>Date</th><th>Day of month</th><th>Business day</th></tr></thead>
+  {% for d in days %}<tr><td>{{ d.day_date }}</td><td>{{ d.day_of_month }}</td><td>{{ 'Yes' if d.is_business_day else 'No' }}</td></tr>{% endfor %}
+</table></div>{% else %}<p>No calendar rows for {{ month }} (calendar covers 2025-01 to 2027-12).</p>{% endif %}
+{% endblock %}

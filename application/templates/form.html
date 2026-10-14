@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Edit' if editing else 'New' }} {{ entity.title[:-1]|lower }}{% endblock %}
+{% block content %}
+<h1>{{ 'Edit' if editing else 'New' }} {{ entity.title[:-1]|lower }}</h1>
+<form method="post" class="form">
+  {% for f in entity.editable %}
+    {% set val = row.get(f.name) %}
+    <label>{{ f.label }}{% if f.required and not (editing and f.key) %} <span class="req">*</span>{% endif %}
+    {% if editing and f.key %}
+      <input value="{{ val|inputval(f.type) }}" disabled> <small>Key fields cannot be changed. Delete and re-create instead.</small>
+    {% elif f.type in ('fk', 'choice') %}
+      <select name="{{ f.name }}" {% if f.required %}required{% endif %}>
+        <option value="">{{ '— choose —' if f.required else '— none —' }}</option>
+        {% for v, l in choices[f.name] %}<option value="{{ v }}" {% if v == val|inputval %}selected{% endif %}>{{ l }}</option>{% endfor %}
+      </select>
+    {% elif f.type == 'textarea' %}
+      <textarea name="{{ f.name }}" maxlength="{{ f.maxlen }}">{{ val|inputval }}</textarea>
+    {% else %}
+      <input name="{{ f.name }}" value="{{ val|inputval(f.type) }}"
+        type="{{ {'datetime': 'datetime-local', 'date': 'date', 'email': 'email', 'int': 'number', 'money': 'number'}.get(f.type, 'text') }}"
+        {% if f.type == 'money' %}step="0.01"{% endif %}
+        {% if f.maxlen %}maxlength="{{ f.maxlen }}"{% endif %}>
+    {% endif %}
+    {% if f.help %}<small>{{ f.help }}</small>{% endif %}
+    </label>
+  {% endfor %}
+  {% if legs %}
+    <label>Initial flight legs (optional, hold Ctrl/Cmd to pick several)
+      <select name="initial_legs" multiple size="8">
+        {% for v, l in legs %}<option value="{{ v }}">{{ l }}</option>{% endfor %}
+      </select>
+      <small>The reservation and these links are saved in one transaction.</small>
+    </label>
+  {% endif %}
+  <p><button class="btn">Save</button>
+     <a href="{{ url_for('list_view', name=entity.name) }}">Cancel</a></p>
+</form>
+{% endblock %}

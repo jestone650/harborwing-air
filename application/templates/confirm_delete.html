@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Delete{% endblock %}
+{% block content %}
+<h1>Delete {{ entity.title[:-1]|lower }}?</h1>
+<p><strong>{% for k, v in keyvals.items() %}{{ k }} = {{ v }}{% if not loop.last %}, {% endif %}{% endfor %}</strong></p>
+{% if reasons %}
+  <div class="flash error">This record cannot be deleted because {{ reasons|join('; ') }}.</div>
+  <p><a href="{{ url_for('list_view', name=entity.name) }}">Back</a></p>
+{% else %}
+  {% if entity.delete_note %}<p class="note">{{ entity.delete_note }}</p>{% endif %}
+  <form method="post"><button class="btn danger">Yes, delete</button>
+    <a href="{{ url_for('list_view', name=entity.name) }}">Cancel</a></form>
+{% endif %}
+{% endblock %}

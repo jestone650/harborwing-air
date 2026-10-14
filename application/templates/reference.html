@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}Reference data{% endblock %}
+{% block content %}
+<h1>Reference data</h1>
+<p class="muted">Read-only. Maintained by <code>database/seed.py</code>. Rows marked DEMO are fictional demonstration codes.</p>
+<div class="grid2">
+{% for title, items in code_lists.items() %}
+  <section class="panel"><h2>{{ title }} codes</h2><ul>{% for v, l in items %}<li>{{ l }}</li>{% endfor %}</ul></section>
+{% endfor %}
+</div>
+<section class="panel"><h2>Airlines ({{ airlines|length }})</h2><div class="table-wrap"><table>
+  <thead><tr><th>Code</th><th>Name</th><th>Demo data</th></tr></thead>
+  {% for a in airlines %}<tr><td>{{ a.airline_code }}</td><td>{{ a.airline_name }}</td><td>{{ a.is_demo_data|show }}</td></tr>{% endfor %}
+</table></div></section>
+<section class="panel"><h2>Aircraft types ({{ aircraft|length }})</h2><div class="table-wrap"><table>
+  <thead><tr><th>Code</th><th>Description</th><th>Seats</th><th>Demo data</th></tr></thead>
+  {% for a in aircraft %}<tr><td>{{ a.aircraft_type_code }}</td><td>{{ a.aircraft_description }}</td><td>{{ a.seat_capacity }}</td><td>{{ a.is_demo_data|show }}</td></tr>{% endfor %}
+</table></div></section>
+{% endblock %}
